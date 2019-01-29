@@ -18,9 +18,7 @@ The ending is super weak (I know)
 
 ### iForest.ipynb
 
-Ia Jupyter notebook where I test some of the properties of Isolation Forest. Works pretty well, but there are clear areas of improvement.
-One being to take into account factor/categorical variables.
-Another one being a Anomoly scores for Variables, which would indicate how lickly a variable is to generate an anomoly.
+Is Jupyter notebook where I test some of the properties of Isolation Forest. Works pretty well, but there are clear areas of improvement. One being to take into account factor/categorical variables. Another one being a Anomaly scores for Variables, which would indicate how likely a variable is to generate an anomaly.
 
 
 ### iForest.py
