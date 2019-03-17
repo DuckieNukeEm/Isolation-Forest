@@ -7,9 +7,8 @@ import numpy as np
 import random as rd
 
 
-
-def iTree(df, l, e = 0):
-    """Recursivley builds an iTree from a pandas data frame
+def iTree(df: pd.DataFrame, l: int, e: int = 0) -> dict:
+    """Recursivley builds an iTree from a DataFrame
     df = the data
     e = current depth
     l = max depth"""
@@ -33,7 +32,7 @@ def iTree(df, l, e = 0):
                 'Depth' : e
                }
     
-def USS(n):
+def USS(n: int) -> int:
     """average path length of unsuccessful search in BST"""
     if n < 2:
         return 0
@@ -43,41 +42,52 @@ def USS(n):
         return (2.0 * (np.log(n - 1.0) + 0.5772156649) + 2.0 * (n - 1.0)/n)
 
 
-def PathLength(pnt, Tree, e = 0):
-    """ Get Path length of a data point (pnt) from a tree (Tree) """
-    if Tree['NodeType'] == 'External':
-        return e + USS(Tree['Size']) 
-    
-    else:
-        q = Tree['SplitAtt']
-        p = Tree['SplitVal']
-        if pnt[q] < p:
-            return PathLength(pnt, Tree['Left'], e + 1)
-        else:
-            return PathLength(pnt, Tree['Right'], e + 1)
-        
+  
 
         
-def iForest(df, nt , phi):
-    """df - the data set, nt - the number of trees to build, phi - subsample size"""
+def iForest(df: pd.DataFrame, nt: int , phi: int) -> dict:
+    """builds an iForest from a data set. nt is the number of iTree's to
+    build, and phi is the sample size"""
     Forest = [None] * nt
     depth = np.ceil(np.log(phi))
-    for i in xrange(nt):
-        sub_sample = rd.sample(df.index, phi)
+    for i in range(nt):
+        sub_sample = np.random.choice(df.index, phi)
         Tree = iTree(df.iloc[sub_sample,:], l = depth)
         Forest[i] = Tree
     return Forest
+      
+def PathLength(pnt: pd.Series, Tree: dict, l: int) -> int:
+	""" Get Path length of a data point through tree (non recursive)"""
+	trvs = 0
+	while(trvs < l):
+		if Tree['NodeType'] == 'External' or trys = (l - 1):
+			trvs += USS(Tree['Size'])
+			break
+	
+		trvs += 1
+		if pnt[Tree['SplitAtt']] < Tree['SplitVal']:
+			Tree = Tree['Left']
+		else:
+			Tree = Tree['Right']
+	return(trvs)
 
-
-def predict_iForest(df, Forest, Phi):
-    """Takes an iForest and then predicts the values of each point, and then converts it into an anomoly score"""
-    PL = pd.Series(0, index = range(len(df)))
-    for i in range(len(Forest)):
-        Tree = Forest[i]
-        PL = PL + df.apply(lambda x: PathLength(x, Tree) , axis = 1)
-    PL = PL/len(Forest)
-    PL = np.power(2, -1 * PL/USS(Phi))
-    return PL    
+def PathLenth(pnt: pd.Series, Forest: 'iForest', l: int) -> int:
+	"""takes a forest for a point, and finds the aggregated path length"""
+	PL = 0
+	for T in range(len(Forest)):
+		PL += PathLength(pnt, Forest[T], l)
+	PL = PL/len(Forest)
+	return(PL)
+    
+def predict_iForest(df: pd.DataFrame, Forest: 'iForest', phi: int, l: int = None) -> pd.Series:
+	"""Takes an iForest and a DataFrame, and computes an anomoly score for each point"""
+	if l is None:
+		l = np.ceil(np.log(phi))
+				
+	PL = pd.Series(0, index = range(len(df)))
+	PL = PL + df.apply(lambda x: PathLenth(x, Forest, l), axis = 1)
+	PL = np.power(2, -1 * PL/USS(phi))
+	return(PL)
 
     
 def Print_iTree(Tree, Direction = None):
